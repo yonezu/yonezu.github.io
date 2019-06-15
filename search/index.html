@@ -31,6 +31,14 @@
         }
     </style>
     
+    <script src="//cdn1.lncld.net/static/js/3.4.2/av-min.js"></script>
+    <script>
+      AV.init({
+        appId: 'IvoKtMgPh2RBwFwfSIECCgvr-gzGzoHsz',
+        appKey: 'YFGwudj10LzFKKYeGUo3naUd'
+      })
+    </script>
+    
     <!--<script type="text/javascript">
       if (document.images) {
         var avatar = new Image();
@@ -43,7 +51,11 @@
         }
       }
     </script>-->
-</head></html>
+</head>
+
+<script src="https://cdn1.lncld.net/static/js/av-min-1.2.1.js"></script>
+  <script>AV.initialize("IvoKtMgPh2RBwFwfSIECCgvr-gzGzoHsz", "YFGwudj10LzFKKYeGUo3naUd");</script>
+</html>
 <body>
     <!-- 背景轮播图功能 -->
     <section class="hidden-xs">
@@ -185,7 +197,7 @@
     var p = query.length > 1 ? query[1].split('=')[1] : 1
     // 获取每页的页码数
     var pageSize = '10'
-    var useLeancloud = ''
+    var useLeancloud = 'YFGwudj10LzFKKYeGUo3naUd'
     var useComment = ('flase' === 'true')
     $.getJSON('/content.json', function (json) {
       $('#search-breadcrumb').append(`搜索'${s}'的结果`)
@@ -210,7 +222,7 @@
       	var [month, day] = article.date.split('-')
         ''
         ''
-        var defaultPreview = '/imgs/preview/preview2.jpg'
+        var defaultPreview = '/imgs/preview/preview1.jpg'
         var preview = article.preview ? article.preview : defaultPreview
         var path = '/' + article.path
         resultList.append(`<div class="article well clearfix article-body article-excerpt" data-aos="flip-up">
@@ -405,6 +417,18 @@
     
     <!-- 要配置好leancloud才能开启此小工具 -->
     
+    <aside id="sidebar-hot_posts">
+    <div class="panel panel-gal hot hidden-xs" data-aos="fade-up" data-aos-duration="2000">
+        <div class="panel-heading">
+            <i class="fa fa-fire"></i>
+            最热文章
+            <i class="fa fa-times-circle panel-remove"></i>
+            <i class="fa fa-chevron-circle-up panel-toggle"></i>
+        </div>
+        <ul class="list-group list-group-flush"></ul>
+    </div>
+</aside>
+    
     
     <aside id="sidebar-recent_posts">
     <div class="panel panel-gal recent hidden-xs" data-aos="fade-up" data-aos-duration="2000">
@@ -587,6 +611,75 @@
 <div id="gal-gotop">
     <i class="fa fa-angle-up"></i>
 </div>
+<!--page counter part-->
+<script>
+    function addCount (Counter) {
+            url=$('.article-date').attr('href').trim();
+            title = $('.article-title').text().trim();
+            var query=new AV.Query(Counter);
+            //use url as unique idnetfication
+            query.equalTo("url",url);
+            query.find({
+                success: function(results){
+                    if(results.length>0)
+                    {
+                        var counter=results[0];
+                        counter.fetchWhenSave(true); //get recent result
+                        counter.increment("time");
+                        counter.save();
+                    }
+                    else
+                    {
+                        var newcounter=new Counter();
+                        newcounter.set("title",title);
+                        newcounter.set("url",url);
+                        newcounter.set("time",1);
+                        newcounter.save(null,{
+                            success: function(newcounter){
+                            //alert('New object created');
+                            },
+                            error: function(newcounter,error){
+                            alert('Failed to create');
+                            }
+                            });
+                    }
+                },
+                error: function(error){
+                    //find null is not a error
+                    alert('Error:'+error.code+" "+error.message);
+                }
+            });
+    }
+    $(function(){
+            var Counter=AV.Object.extend("Counter");
+            //only increse visit counting when intering a page
+            if ($('.article-title').length == 1)
+               addCount(Counter);
+            var query=new AV.Query(Counter);
+            query.descending("time");
+            // the sum of popular posts
+            query.limit(10); 
+            query.find({
+                success: function(results){
+                        for(var i=0;i<results.length;i++)    
+                        {
+                            var counter=results[i];
+                            title=counter.get("title");
+                            url=counter.get("url");
+                            time=counter.get("time");
+                            // add to the popularlist widget
+                            showcontent=title+" ("+time+")";
+                            //notice the "" in href
+                            $('.popularlist').append('<li><a href="'+url+'">'+showcontent+'</a></li>');
+                        }
+                    },
+                error: function(error){
+                    alert("Error:"+error.code+" "+error.message);
+                }
+                }
+            )
+            });
+    </script>
 </body>
 <script src="/js/activate-power-mode.js"></script>
 <script>
@@ -640,6 +733,12 @@
 
 <script src="/js/oni.js"></script>
 
+
+<script>
+    window.hot_posts_count = '10'
+    // window.use_leancloud = 'true'
+</script>
+<script src="/js/comment/leancloud.js"></script>
 
 
 </html>
